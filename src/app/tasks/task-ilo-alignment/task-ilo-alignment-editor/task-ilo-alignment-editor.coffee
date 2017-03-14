@@ -12,16 +12,19 @@ angular.module('doubtfire.tasks.task-ilo-alignment.task-ilo-alignment-editor',[]
     # select tasks to include in portfolio
     showIncludeTasks: '=?'
   controller: ($scope, $modal, $rootScope, $filter, currentUser, unitService, alertService, gradeService, LearningAlignments, projectService, taskService, Visualisation, TaskAlignment, Task, CsvResultModal, outcomeService, TaskILOAlignmentModal) ->
-    $scope.showTaskName = $scope.unit.ilos.length < 5
     $scope.showGraph = false
+    $scope.showIncludeTasks ?= false
     $scope.closeGraph = ->
       $scope.showGraph = false
     # Set source
     if $scope.project?
+      # If project, do not show task column
+      $scope.taskColumnColspan = 0
       $scope.source = $scope.project
       $scope.tasks = $scope.project.tasks
       $scope.taskStatusFactor = outcomeService.projectTaskStatusFactor($scope.project)
     else
+      $scope.taskColumnColspan = 1
       $scope.source = $scope.unit
       $scope.tasks = _.map $scope.unit.task_definitions, (td) ->
         { definition: td }

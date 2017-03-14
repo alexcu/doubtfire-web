@@ -21,8 +21,7 @@
           </button>
         </div>
       </div><!--/heading-->
-
-      <div class="panel-body">
+      <div class="panel-body" ng-show="tasks.length == 0 || unit.ilos.length == 0 || showIncludeTasks">
         <div class="large-notice-block" ng-hide="tasks.length > 0">
           <i class="fa fa-2x fa-tasks"></i>
           <p>No tasks in this unit</p>
@@ -32,59 +31,69 @@
           <i class="fa fa-2x fa-graduation-cap"></i>
           <p>No learning outcomes in this unit</p>
         </div>
-        <table class="table table-task-alignment col-sm-12" ng-hide="tasks.length == 0 || (unit.ilos.length == 0 && ! showIncludeTasks)">
-          <thead>
-            <tr>
-              <th class="task" colspan="{{(showTaskName ? 3 : 2) - (source === unit ? 1 : 0)}}">Task</th>
-              <th class="ilo text-center" ng-repeat="ilo in unit.ilos | orderBy: 'abbreviation'" tooltip="{{ilo.name}}" tooltip-append-to-body="true">
-                <label class="label label-info">{{ilo.abbreviation}}</label>
-              </th>
-              <th ng-if="showIncludeTasks" class="include-in-portfolio">Include</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr ng-repeat="task in tasks | taskForPortfolio: source === project | orderBy: 'definition.seq'">
-              <td class="task-abbreviation" tooltip="{{task.definition.name}}" tooltip-append-to-body="true">
-                <label class="label label-info">{{task.definition.abbreviation}}</label>
-              </td>
-              <td class="task-status-icon" ng-if="source === project">
-                <status-icon status="task.status"></status-icon>
-              </td>
-              <td class="task-name" ng-show="showTaskName">
-                {{task.definition.name}}
-              </td>
-              <td ng-repeat="ilo in unit.ilos | orderBy: 'abbreviation'" class="ilo-alignment text-center">
-                {{alignment = alignmentForTaskAndIlo(task, ilo); ''}}
-                <button ng-click="showAlignmentModal(task, ilo, alignment)" class="btn btn-sm btn-default btn-alignment">
-                  <task-ilo-alignment-rater ng-if="alignment" ng-model="alignment" compact="true"></task-ilo-alignment-rater>
-                  <i ng-hide="alignment" class="fa fa-circle-o fa-3x text-danger" tooltip-append-to-body="true" tooltip="You decided {{task.definition.abbreviation}} is not aligned to {{ilo.abbreviation}}"></i>
-                </button>
-              </td>
-              <td ng-if="showIncludeTasks" class="include-in-portfolio">
-                <div
-                  tooltip-enable="disableInclude(task)"
-                  tooltip="You cannot select this task as it is not aligned to any ILOs"
-                  tooltip-placement="left"
-                  tooltip-append-to-body="true"
-                  class="button-wrapper">
-                  <button
-                    class="btn btn-sm btn-{{task.include_in_portfolio ? 'success' : 'default'}} col-sm-6 text-center"
-                    ng-click="includeTaskInPorfolio(task)"
-                    ng-if="!disableInclude(task)">
-                    <i class="fa fa-{{task.include_in_portfolio ? 'check' : 'times'}}"></i>
-                  </button>
-                  <button
-                    class="btn btn-sm btn-warning col-sm-6 text-center"
-                    ng-disabled="disableInclude(task)"
-                    ng-show="disableInclude(task)">
-                    <i class="fa fa-question"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div><!--/select-panel-body-->
+      </div>
+      <!--/select-panel-body-->
+      <table
+        class="table table-hover table-bordered table-condensed table-task-alignment"
+        ng-hide="tasks.length == 0 || (unit.ilos.length == 0 && ! showIncludeTasks)">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th ng-show="source == project">Status</th>
+            <th
+              class="text-center"
+              ng-repeat="ilo in unit.ilos | orderBy: 'abbreviation'"
+              tooltip="{{ilo.name}}"
+              tooltip-append-to-body="true"
+              ng-bind="ilo.abbreviation">
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="task in tasks | taskForPortfolio: source === project | orderBy: 'definition.seq'">
+            <th ng-bind="task.definition.name"></th>
+            <td ng-if="source === project">
+              <status-icon status="task.status"></status-icon>
+            </td>
+            <td ng-repeat="ilo in unit.ilos | orderBy: 'abbreviation'" class="ilo-alignment">
+              {{alignment = alignmentForTaskAndIlo(task, ilo); ''}}
+              <button ng-click="showAlignmentModal(task, ilo, alignment)" class="btn btn-sm btn-default btn-alignment">
+                <task-ilo-alignment-rater ng-if="alignment" ng-model="alignment" compact="true"></task-ilo-alignment-rater>
+                <i ng-hide="alignment" class="fa fa-circle-o fa-3x text-danger" tooltip-append-to-body="true" tooltip="You decided {{task.definition.abbreviation}} is not aligned to {{ilo.abbreviation}}"></i>
+              </button>
+            </td>
+            <td>
+              <button
+                class="btn btn-sm btn-default"
+                ng-click="batchEditAlignment(task)">
+                <i class="fa fa-pencil"></i> Edit All
+              </button>
+              <button
+                ng-if="showIncludeTasks"
+                tooltip-enable="disableInclude(task)"
+                tooltip="You cannot select this task as it is not aligned to any ILOs" tooltip-placement="left"
+                tooltip-append-to-body="true"
+                class="btn btn-sm btn-{{task.include_in_portfolio ? 'success' : 'default'}} text-center"
+                ng-class="{
+                  'task.include_in_portfolio': 'success',
+                  '!task.include_in_portfolio': 'default',
+                  'disableInclude(task): 'warning'
+                }"
+                ng-click="includeTaskInPorfolio(task)"
+                ng-disabled="disableInclude(task)"
+                ng-if="!disableInclude(task)">
+                <i ng-class="{
+                  'task.include_in_portfolio': 'fa fa-check',
+                  '!task.include_in_portfolio': 'fa fa-times',
+                  'disableInclude(task): 'fa fa-question'
+                }"></i>
+                {{task.include_in_portfolio ? '' : 'Not'}} Included
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div><!--/select-panel-->
     <div class="panel panel-default visualisation" ng-if="showGraph">
       <div class="panel-heading clearfix">
