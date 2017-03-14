@@ -11,7 +11,7 @@ angular.module('doubtfire.tasks.task-ilo-alignment.task-ilo-alignment-editor',[]
     hidePanel: '=?'
     # select tasks to include in portfolio
     showIncludeTasks: '=?'
-  controller: ($scope, $modal, $rootScope, $filter, currentUser, unitService, alertService, gradeService, LearningAlignments, projectService, taskService, Visualisation, TaskAlignment, Task, CsvResultModal, outcomeService, TaskILOAlignmentModal) ->
+  controller: ($scope, $modal, $rootScope, $filter, currentUser, unitService, alertService, gradeService, LearningAlignments, projectService, taskService, Visualisation, TaskAlignment, Task, CsvResultModal, outcomeService, TaskILOAlignmentModal, TaskILOBatchAlignmentModal) ->
     $scope.showGraph = false
     $scope.showIncludeTasks ?= false
     $scope.closeGraph = ->
@@ -19,40 +19,42 @@ angular.module('doubtfire.tasks.task-ilo-alignment.task-ilo-alignment-editor',[]
     # Set source
     if $scope.project?
       # If project, do not show task column
-      $scope.taskColumnColspan = 0
       $scope.source = $scope.project
       $scope.tasks = $scope.project.tasks
       $scope.taskStatusFactor = outcomeService.projectTaskStatusFactor($scope.project)
     else
-      $scope.taskColumnColspan = 1
       $scope.source = $scope.unit
       $scope.tasks = _.map $scope.unit.task_definitions, (td) ->
         { definition: td }
       $scope.taskStatusFactor = outcomeService.unitTaskStatusFactor()
 
-    alignments = []
-    $scope.$watch 'source.task_outcome_alignments.length', ->
-      return unless $scope.source.task_outcome_alignments?
-      alignments =
-        _ .chain($scope.source.task_outcome_alignments)
-          .filter( (d) -> d.rating > 0 )
-          .groupBy('task_definition_id')
-          .map (d, i) ->
-            d = _ .chain(d)
-                  .groupBy('learning_outcome_id')
-                  .map( (d, i) -> [i, d[0]] )
-                  .fromPairs()
-                  .value()
-            [i, d]
-          .fromPairs()
-          .value()
-      alignments
+    remapAlignments = ->
+      $scope.alignments = _.chain($scope.source.task_outcome_alignments)
+        .filter( (d) -> d.rating > 0 )
+        .groupBy('task_definition_id')
+        .map((d, i) ->
+          d = _ .chain(d)
+                .groupBy('learning_outcome_id')
+                .map( (d, i) -> [i, d[0]] )
+                .fromPairs()
+                .value()
+          [i, d]
+        )
+        .fromPairs()
+        .value()
 
-    $scope.showAlignmentModal = (task, ilo, alignment) ->
-      TaskILOAlignmentModal.show task, ilo, alignment, $scope.unit, $scope.project, $scope.source
+    watchForAlignmentsLoad = $scope.$watch('source.task_outcome_alignments.length', ->
+      remapAlignments()
+      watchForAlignmentsLoad()
+    )
 
-    $scope.alignmentForTaskAndIlo = (task, ilo) ->
-      alignments[task.definition.id]?[ilo.id]
+    $scope.showAlignmentModal = (task, ilo) ->
+      alignment = $scope.alignments[task.definition.id]?[ilo.id]
+      TaskILOAlignmentModal.show(task, ilo, alignment, $scope.unit, $scope.project, $scope.source).result.then(remapAlignments)
+
+    $scope.showBatchAlignmentModal = (task) ->
+      alignmentsForTask = $scope.alignments[task.definition.id]
+      TaskILOBatchAlignmentModal.show(task, $scope.unit, alignmentsForTask, $scope.source).result.then(remapAlignments)
 
     $scope.disableInclude = (task) ->
       # if there are no ILOs, you can always include tasks

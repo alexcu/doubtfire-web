@@ -1,5 +1,5 @@
 <div class="task-ilo-alignment-modal">
-  <div class="modal-header text-center">
+  <div class="modal-header">
     <h3>
       How much does <label class="label label-info" tooltip="{{task.definition.name}}">{{task.definition.abbreviation}}</label> relate to <label class="label label-info" tooltip="{{ilo.name}}">{{ilo.abbreviation}}</label>?
     </h3>
@@ -12,7 +12,7 @@
     <div class="col-sm-12 rationale-wrapper" ng-show="alignment.rating > 0">
       <div tooltip="Click to edit rationale" tooltip-placement="left" tooltip-append-to-body="false" tooltip-popup-delay="300" tooltip-enable="alignment.description != null" ng-click="toggleEditRationale()" class="rationale" ng-class="{'no-rationale': alignment.description == null}" ng-hide="editingRationale">
         <label class="text-muted" ng-show="alignment.description != null">
-          Provided Rationale
+          Provided Specific Rationale
         </label>
         <div ng-bind-html="(alignment.description || 'No rationale provided') | markdown"></div>
         <div class="small" ng-hide="alignment.description">Click to add one</div>
@@ -29,11 +29,16 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button ng-click="closeModal()" class="btn btn-primary">
-      <i class="fa fa-check"></i>
+    <button
+      ng-click="removeAlignmentItem(alignment)"
+      ng-if="alignment"
+      tooltip="Remove this alignment"
+      tooltip-append-to-body="true"
+      class="btn btn-danger">
+      <i class="fa fa-trash-o"></i> Delete Alignment
     </button>
-    <button ng-click="removeAlignmentItem(alignment)" ng-if="alignment" tooltip="Remove this alignment" tooltip-append-to-body="true" class="btn btn-danger">
-      <i class="fa fa-trash-o"></i>
+    <button ng-click="closeModal()" class="btn btn-primary">
+      <i class="fa fa-check"></i> Update Alignment
     </button>
   </div>
 </div>

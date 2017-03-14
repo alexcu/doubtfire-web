@@ -1,0 +1,53 @@
+<div class="modal-header">
+  <h2>Edit all alignments for {{task.definition.name}}</h2>
+</div>
+<div class="modal-body clearfix">
+  <p>
+    Please rate the relevancy of this task to the specific learning outcome. You <strong>must</strong> relate this task to at least one outcome.
+  </p>
+  <p class="text-muted">
+    If you think the task is not related to a specific outcome, click the highest filled circle to remove its relevancy.
+  </p>
+  <div class="card">
+    <div class="list-group">
+      <div class="list-group-item clearfix" ng-repeat="ilo in ilos | orderBy: 'ilo_number'">
+        <div class="col-sm-12 col-md-7" ng-click="ilo.collapsed = !ilo.collapsed">
+          <h4>
+            <strong>{{ilo.abbreviation}}</strong>
+            <small>{{ilo.name}}</small>
+          </h4>
+          <div>
+            {{ilo.description}}
+          </div>
+        </div>
+        <!--/ilo-description-->
+        <div class="col-sm-12 col-md-5">
+          <task-ilo-alignment-rater
+            readonly="false"
+            unit="task.unit()"
+            show-zero-rating="true"
+            ng-model="alignments[ilo.id]">
+          </task-ilo-alignment-rater>
+        </div>
+        <!--/alignment-rater-->
+      </div>
+    </div>
+    <!--/alignment-list-group-->
+    <div class="card-footer">
+      <p>
+        Jusitfy your relevancy alignments with a comment to explain your choices.
+      </p>
+      <textarea ng-model="rationale" class="form-control input-lg" rows="3" placeholder="My rationale is..."></textarea>
+    </div>
+    <!--/comments-for-alignment-->
+  </div>
+  <!--/card-alignment-->
+</div>
+<div class="modal-footer">
+  <button ng-click="$dismiss()" class="btn btn-default">
+    Close
+  </button>
+  <button ng-click="updateAlignments()" class="btn btn-primary">
+    <i class="fa fa-check"></i> Update Alignments
+  </button>
+</div>

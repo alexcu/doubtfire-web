@@ -57,16 +57,24 @@
               <status-icon status="task.status"></status-icon>
             </td>
             <td ng-repeat="ilo in unit.ilos | orderBy: 'abbreviation'" class="ilo-alignment">
-              {{alignment = alignmentForTaskAndIlo(task, ilo); ''}}
-              <button ng-click="showAlignmentModal(task, ilo, alignment)" class="btn btn-sm btn-default btn-alignment">
-                <task-ilo-alignment-rater ng-if="alignment" ng-model="alignment" compact="true"></task-ilo-alignment-rater>
-                <i ng-hide="alignment" class="fa fa-circle-o fa-3x text-danger" tooltip-append-to-body="true" tooltip="You decided {{task.definition.abbreviation}} is not aligned to {{ilo.abbreviation}}"></i>
+              <button ng-click="showAlignmentModal(task, ilo)" class="btn btn-sm btn-default btn-alignment">
+                <task-ilo-alignment-rater
+                  ng-if="alignments[task.definition.id][ilo.id]"
+                  ng-model="alignments[task.definition.id][ilo.id]"
+                  compact="true">
+                </task-ilo-alignment-rater>
+                <i
+                  ng-hide="alignments[task.definition.id][ilo.id]"
+                  class="fa fa-circle-o fa-3x text-danger"
+                  tooltip-append-to-body="true"
+                  tooltip="You decided {{task.definition.abbreviation}} is not aligned to {{ilo.abbreviation}}">
+                </i>
               </button>
             </td>
             <td>
               <button
                 class="btn btn-sm btn-default"
-                ng-click="batchEditAlignment(task)">
+                ng-click="showBatchAlignmentModal(task)">
                 <i class="fa fa-pencil"></i> Edit All
               </button>
               <button
